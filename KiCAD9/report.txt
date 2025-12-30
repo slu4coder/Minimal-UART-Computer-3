@@ -1,0 +1,9 @@
+Plot in "/home/slu4/Dokumente/KiCAD/Minimal CPU 3.3 Tiny LED KiCAD9/gerbers/8-Bit CPU 32k-F_Cu.gtl" geschrieben.
+Plot in "/home/slu4/Dokumente/KiCAD/Minimal CPU 3.3 Tiny LED KiCAD9/gerbers/8-Bit CPU 32k-B_Cu.gbl" geschrieben.
+Plot in "/home/slu4/Dokumente/KiCAD/Minimal CPU 3.3 Tiny LED KiCAD9/gerbers/8-Bit CPU 32k-F_Silkscreen.gto" geschrieben.
+Plot in "/home/slu4/Dokumente/KiCAD/Minimal CPU 3.3 Tiny LED KiCAD9/gerbers/8-Bit CPU 32k-B_Silkscreen.gbo" geschrieben.
+Plot in "/home/slu4/Dokumente/KiCAD/Minimal CPU 3.3 Tiny LED KiCAD9/gerbers/8-Bit CPU 32k-F_Mask.gts" geschrieben.
+Plot in "/home/slu4/Dokumente/KiCAD/Minimal CPU 3.3 Tiny LED KiCAD9/gerbers/8-Bit CPU 32k-B_Mask.gbs" geschrieben.
+Plot in "/home/slu4/Dokumente/KiCAD/Minimal CPU 3.3 Tiny LED KiCAD9/gerbers/8-Bit CPU 32k-Edge_Cuts.gm1" geschrieben.
+Hinweis: Fertig.
+Hinweis: Fertig.
