@@ -1,11 +1,5 @@
 # NEW: Version 3 of the Minimal UART Computer
 
-See https://github.com/slu4coder/Minimal-64x4-Home-Computer for a more feature-rich alternative.
-
-This is a free and non-commercial project. I am in no way associated with any activies selling this as a product.
-Any such activity represents a license violation. Individual licenses apply for hardware and software parts. Please refer to the
-appropriate documentations for detailed licensing information.
-
 Hi there, it's been a while. I am back with a big update of my DIY 'Minimal UART Computer', a machine built around a serial interface just from a handful of logic ICs, RAM and FLASH memory. For it's size, simplicity and self-imposed limitations, it's got more processing power than these two classic 1980's machines combined. It's mission is to be a fun learning platform for understanding computers on a fundamental level.
 
 <img width="779" height="625" alt="Minimal_UART_3" src="https://github.com/user-attachments/assets/df3e3bac-6c39-49c3-8b9c-45a26bc524d2" />
@@ -50,6 +44,12 @@ OVERVIEW:
 I hope you find this information useful, educational or otherwise interesting. I'd love to hear about your build, so meet me on YouTube:
 
 https://www.youtube.com/channel/UCXYQcMpUBT3aaQKfmAVJNow
+
+This is a free and non-commercial project. I am in no way associated with any activies selling this as a product.
+Any such activity represents a license violation. Individual licenses apply for hardware and software parts. Please refer to the
+appropriate documentations for detailed licensing information.
+
+See https://github.com/slu4coder/Minimal-64x4-Home-Computer for a more feature-rich alternative.
 
 Have fun!
 
