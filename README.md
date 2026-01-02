@@ -31,7 +31,7 @@ OVERVIEW:
 
 ● 24 control signals
 
-● Only 30(!) 74HCxx logic ICs, RAM and FLASH
+● Only 30(!) 74HCxx logic ICs, RAM and FLASH (an ATmega328p is used as a variable clock generator)
 
 ● NEW: Blinkenlights ;-)
 
