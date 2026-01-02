@@ -1,8 +1,8 @@
-// Frontend of the 'Minimal UART Computer 3.x' Assembler
+// Frontend of the 'Minimal UART 3' Assembler
 // by Carsten Herting (slu4) 2025, last update 3.8.2025
 
-// Windows: Build with: g++ asm.cpp -O2 -oprgs/asm.exe -s -static
-// Linux: Build with:   g++ asm.cpp -O2 -oprgs/asm     -s
+// Win/MSYS2: Build with g++ asm.cpp -O2 -oasm.exe -s -static
+// Linux:     Build with g++ asm.cpp -O2 -oasm     -s
 
 #include "mnemonics.h"
 #include "asm.h"
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		std::cout << "Minimal UART CPU Assembler by C. Herting (slu4) 2025\n";		// output info screen
+		std::cout << "Minimal UART 3 Assembler by C. Herting (slu4) 2026\n";
 		std::cout << "  Usage: asm <sourcefile> [-s[<tag>]]\n";
 		std::cout << "assembles a <sourcefile> to machine code and outputs\n";
 		std::cout << "the result in Intel HEX format to the console.\n";
