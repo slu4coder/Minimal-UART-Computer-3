@@ -1,13 +1,14 @@
-// by Carsten Herting (slu4) 2023, last update 28.8.2023
-// Build with: g++ asm.cpp -O2 -oasm.exe -s -static
+// Frontend of the 'Minimal UART 3' Assembler
+// by Carsten Herting (slu4) 2025, last update 3.8.2025
+
+// Win/MSYS2: Build with g++ asm.cpp -O2 -oasm.exe -s -static
+// Linux:     Build with g++ asm.cpp -O2 -oasm     -s
 
 #include "mnemonics.h"
 #include "asm.h"
 
 int main(int argc, char *argv[])
 {
-	//std::cout << "Minimal Tiny Assembler by Carsten Herting (slu4) 2023\n\n";		// output help screen
-
 	bool dosym = false;																// by default don't output a symbol table
 	std::string symtag = "";													// by default don't use any symbol tag
 	int filenamepos = 0;															// extract possible -s parameter and filename
@@ -33,9 +34,10 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		std::cout << "  Usage: asm <sourcefile> [-s[<tag>]]\n\n";
+		std::cout << "Minimal UART 3 Assembler by C. Herting (slu4) 2026\n";
+		std::cout << "  Usage: asm <sourcefile> [-s[<tag>]]\n";
 		std::cout << "assembles a <sourcefile> to machine code and outputs\n";
-		std::cout << "the result in Intel HEX format to the console.\n\n";
+		std::cout << "the result in Intel HEX format to the console.\n";
 		std::cout << "  -s[<tag>]  outputs a list of symbolic constants\n";
 		std::cout << "             [starting with <tag>] and their values.\n";
 	}
