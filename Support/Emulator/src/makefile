@@ -8,6 +8,8 @@ GLFW_LINUX_A	:= lib/libglfw3linux.a
 GLFW_WIN_A		:= lib/libglfw3win.a
 
 ifeq ($(BUILD),windows)
+	EXEEXT			:= .exe
+	STATICFLAG	:= -static
 	CXX					:= x86_64-w64-mingw32-g++
 	LDFLAGS			:= -s -static -Llib -static-libgcc -static-libstdc++
 	LIBS				:= $(GLFW_WIN_A) -lopengl32 -lgdi32 # optional: luser32 -lkernel32 -lshell32 -lwinmm
@@ -18,6 +20,8 @@ ifeq ($(BUILD),windows)
 		OBJCOPY		:= x86_64-w64-mingw32-objcopy
 	endif
 else
+	EXEEXT			:=
+	STATICFLAG	:=
 	CXX					:= g++
 	LDFLAGS			:= -s -pthread -Llib
 	LIBS				:= $(GLFW_LINUX_A) -lrt -lm -ldl -lX11 -lXrandr -lXinerama -lXxf86vm -lXcursor -lGL
@@ -26,19 +30,22 @@ else
 endif
 
 .PHONY: linux windows clean
+
 linux:
-	$(CXX) asm.cpp -O2 -oasm -s
-	@$(MAKE) BUILD=linux MinimalUART.exe
+	@$(MAKE) BUILD=linux asm MinimalUART
 
 windows:
-	$(CXX) asm.cpp -O2 -oasm.exe -s -static
-	@$(MAKE) BUILD=windows MinimalUART.exe
+	@$(MAKE) BUILD=windows asm MinimalUART
 
 clean:
-	rm -f *.o *.exe
+	rm -f *.o *.exe asm MinimalUART shader.o charset.o
 
-MinimalUART.exe: main.o glad.o resources.o
-	$(CXX) $(LDFLAGS) -L$(3RDPARTY)/lib -o$@ $^ $(LIBS)
+
+asm: asm.cpp asm.h
+	$(CXX) $< -O2 -o$@$(EXEEXT) -s $(STATICFLAG)
+
+MinimalUART: main.o glad.o resources.o
+	$(CXX) $(LDFLAGS) -L$(3RDPARTY)/lib -o$@$(EXEEXT) $^ $(LIBS)
 
 main.o: main.cpp
 	$(CXX) $(CFLAGS) -c $<
