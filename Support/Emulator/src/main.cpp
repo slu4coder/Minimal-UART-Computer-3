@@ -1,13 +1,33 @@
-// *******************************************************************
-// ***** Minimal UART Tiny Emulator by Carsten Herting 20.7.2025 *****
-// *******************************************************************
+// *******************************************************************************
+// ***** Minimal UART Computer 3 Emulator by Carsten Herting -- Jan 5th 2026 *****
+// *******************************************************************************
+// See licensing information at the end of this file.
 
 // sudo apt install picocom
 // picocom -b 125000 --databits 7 --parity n --stopbits 2 --flow n --imap lfcrlf --omap crlf /dev/ttyUSB0
 // type 'receive' and upload file from another terminal: ./asm.exe mandel.asm | ./send.sh
 
-#include "mnemonics.h"
 #include "asm.h"
+
+#include <iostream> // console output
+#include <iomanip> // for std::setfill, std::hex,, std::dec
+#include <fstream> // file input
+#include <cstdint>
+#include <cstring>
+#include <string>
+#include <stdexcept>
+#include <memory> // smart pointers
+#include <vector> // dynamic arrays
+#include <deque>
+#include <thread>
+#include <algorithm>
+#include <utility> // for exchange
+#include <unordered_map> // for shader uniform location cache
+
+#include <glad/glad.h> // include OpenGL-Extension-Loader before GLFW
+#include <GLFW/glfw3.h> // GLFW: GLFW_VERSION_MAJOR wird definiert -> nimmt Einfluss auf main()
+#include <glm/glm.hpp> // OpenGL Math Header Library
+#include <glm/gtc/type_ptr.hpp> // für glm::value_ptr
 
 #undef TERMINAL_TO_FILE
 
@@ -55,26 +75,6 @@ uint32_t gKeyTarget {TARGET_MENU};									 // defines the current keyboard inpu
 bool gFlashLoaded {false};
 std::string gSerialInput;														 // the global strings receive input from the keyboard callback function
 std::string gMenuInput;
-
-#include <iostream> // console output
-#include <iomanip> // for std::setfill, std::hex,, std::dec
-#include <fstream> // file input
-#include <cstdint>
-#include <cstring>
-#include <string>
-#include <stdexcept>
-#include <memory> // smart pointers
-#include <vector> // dynamic arrays
-#include <deque>
-#include <thread>
-#include <algorithm>
-#include <utility> // for exchange
-#include <unordered_map> // for shader uniform location cache
-
-#include <glad/glad.h> // include OpenGL-Extension-Loader before GLFW
-#include <GLFW/glfw3.h> // GLFW: GLFW_VERSION_MAJOR wird definiert -> nimmt Einfluss auf main()
-#include <glm/glm.hpp> // OpenGL Math Header Library
-#include <glm/gtc/type_ptr.hpp> // für glm::value_ptr
 
 extern "C" const char _binary_shader_glsl_start, _binary_shader_glsl_end; // linked binary resource symbols
 extern "C" const char _binary_charset_bin_start, _binary_charset_bin_end;
@@ -876,7 +876,7 @@ public:
 									std::string source;
 									std::getline(file, source, '\0');
 									file.close();
-									Assembler(source, MNEMONICS, hexout, errors, false, "");
+									Assembler(source, hexout, errors, false, "");
 									if (errors.str().size() == 0) gMenuInput += hexout.str(); else mTerm.ProcessString(errors.str());
 								} else mTerm.ProcessString("ERROR: File not found.\n");
 
@@ -1177,3 +1177,16 @@ int main(int argc, char *argv[]) // OpenGL setup and launch of Application class
   glfwTerminate(); // destroy context, window and all other OpenGL stuff
   return 0;
 }
+
+/*
+  LICENSING INFORMATION
+  ---------------------
+  This file is free software: you can redistribute it and/or modify it under the terms of the
+  GNU General Public License as published by the Free Software Foundation, either
+  version 3 of the License, or (at your option) any later version.
+  
+  This file is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+  License for more details. You should have received a copy of the GNU General Public License along
+  with this program. If not, see https://www.gnu.org/licenses/.
+*/

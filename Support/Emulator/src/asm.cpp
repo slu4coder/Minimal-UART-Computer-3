@@ -4,7 +4,6 @@
 // Win/MSYS2: Build with g++ asm.cpp -O2 -oasm.exe -s -static
 // Linux:     Build with g++ asm.cpp -O2 -oasm     -s
 
-#include "mnemonics.h"
 #include "asm.h"
 
 int main(int argc, char *argv[])
@@ -27,7 +26,7 @@ int main(int argc, char *argv[])
       std::string source;
       std::getline(file, source, '\0');
       file.close();
-      Assembler(source, MNEMONICS, hexout, errors, dosym, symtag);
+      Assembler(source, hexout, errors, dosym, symtag);
       if (errors.str().size() == 0) std::cout << hexout.str(); else std::cout << errors.str();
 		}
 		else std::cout << ("ERROR: Can't open \"" + std::string(argv[filenamepos]) + "\".\n");
