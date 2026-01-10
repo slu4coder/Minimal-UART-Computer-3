@@ -533,7 +533,7 @@ public:
 	Computer(TextScreen& usetextscr, Terminal& useterm) : mText(usetextscr), mTerm(useterm)
 	{
 		for (int j=0; j<8; j++) for (int i=0; i<sizeof(mFLASH[j]); i++) mFLASH[j][i] = 0xff;
-		for (int i=0; i<sizeof(mRAM); i++) mRAM[i] = RandomByte(); // 0x00;
+		for (int i=0; i<sizeof(mRAM); i++) mRAM[i] = RandomByte(); // oder nutze 0x00;
 
 		std::ifstream file;
 		file.open("flash.bin", std::ios::binary | std::ios::in);

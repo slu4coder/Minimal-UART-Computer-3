@@ -33,54 +33,41 @@ int opCode(const std::string& src, size_t p, size_t len)
 }
 
 // find line number of given position ep
-std::string linenr(const std::string& src, size_t ep)
+std::string linenr(const std::string& s, size_t p)
 {
-  size_t n = 1;
-  for (size_t i = 0; i < std::min(ep, src.size()); ++i) if (src[i] == '\n') ++n;
+  size_t n=1;
+  for (size_t i=0; i<p && i<s.size(); ++i) n += (s[i]=='\n');
   return std::to_string(n);
 }
 
-// advance 'ep' over whitespace and separators until a start of an element and return element's length
-size_t findelem(const std::string& src, size_t& ep)
+// advance 'ep' over separators and comments until a start of an element, return element's length
+static inline bool is_sep(char c) { return (unsigned char)c <= 32 || c == ','; }
+size_t findelem(const std::string& s, size_t& p)
 {
-  while (true)
+  const size_t n = s.size();
+  while (p < n)
   {
-    if (ep >= src.size()) return 0; // EOF reached
-    else if (static_cast<unsigned char>(src[ep]) <= 32 || src[ep] == ',') ep++;	// consume element separators
-    else if (src[ep] == ';') // consume ; comments
-    {
-      while (true)
-      {
-        ep++;
-        if (ep >= src.size()) return 0;	// comment closes with EOF => no more elements
-        if (src[ep] == '\n') { ep++; break; } // comment closes with LF
-      }
-    }
-    else if (src[ep] == '\'') // enter special case '.. string
-    {
-      size_t np = ep + 1; // parse beyond string start marker
-      while (true)
-      {
-        if (np >= src.size()) return np - ep; // 
-        if (src[np] == '\'' || src[np] == '\n') break; // may still not be a valid '..' string
-        np++;
-      }
-      return np + 1 - ep; // return length including ' marker(s)
-    }
-    else // handle other elements
-    {
-      size_t np = ep + 1; // parse beyond elements first char
-      while (np < src.size() && static_cast<unsigned char>(src[np]) > 32 && src[np] != ',' && src[np] != ';') np++; // consume printable characters except , and ;
-      return np - ep; // return element length
-    }
+    if (is_sep(s[p])) { p++; continue; } // skip separators
+    if (s[p] == ';') { while (p < n && s[p++] != '\n'); continue; } // skip comments
+    break; // break on all other chars
   }
+  if (p >= n) return 0; // EOF reached
+  if (s[p] == '\'') // ist es ein string?
+  {
+    size_t q = p + 1;
+    while (q < n && s[q] != '\'' && s[q] != '\n') q++;
+    return (q < n && s[q] == '\'') ? (q - p + 1) : (q - p); // EOF oder LF als Ende wird nicht mitgezählt
+  }
+  size_t q = p + 1; // Länge ermitteln
+  while (q < n && !is_sep(s[q]) && s[q] != ';') q++;
+  return q - p;
 }
 
 // emit code in proper Intel HEX format
 class HexPrinter
 {
   public:
-    HexPrinter(std::stringstream& out) : mOut(out) {}
+    HexPrinter(std::stringstream& out) : mOut(out) { mOut << std::uppercase << std::hex << std::setfill('0'); }
     ~HexPrinter() { if (used > 0) emitBuffer(); mOut << ":00000001FF\n"; } // write end of hex file
     void SetAddress(uint16_t laddr) { if (used > 0) emitBuffer(); linaddr = laddr; } // begin new line at new address
     uint16_t GetAddress() { return linaddr + used; } // returns the current emission address
@@ -88,11 +75,8 @@ class HexPrinter
   protected:
     void emitBuffer() // emits current buffer as a line (only call if buffer is non-empty!)
     {
-      mOut << ":" << std::hex << std::uppercase << std::setfill('0');
-      uint8_t pch = (linaddr & 0xff00)>>8;
-      uint8_t pcl = linaddr & 0x00ff;
-      mOut << std::setw(2) << used << std::setw(2) << int(pch) << std::setw(2) << int(pcl) << "00";
-      uint8_t checksum = used + pch + pcl;
+      uint8_t pch = (linaddr & 0xff00)>>8; uint8_t pcl = linaddr & 0x00ff; uint8_t checksum = used + pch + pcl;
+      mOut << ":" << std::setw(2) << used << std::setw(2) << int(pch) << std::setw(2) << int(pcl) << "00";
       for(size_t i=0; i<used; i++) { mOut << std::setw(2) << int(buffer[i]); checksum += buffer[i]; }
       mOut << std::setw(2) << int((~checksum + 1) & 0xff) << "\n";
       linaddr += used; used = 0;
@@ -106,15 +90,13 @@ class HexPrinter
 bool parse_org(const std::string& src, size_t& ep, size_t& elen, uint16_t& pc, std::stringstream& errors)
 {
   ep += elen; elen = findelem(src, ep); // move to next element
-  if (elen > 2 && src[ep] == '0' && src[ep+1] == 'x') // check for 0x. (hex format)
+  if (elen > 2 && src.substr(ep, 2) == "0x") // check for 0x. (hex format)
   {
     size_t k = src.find_first_not_of("0123456789abcdefABCDEF", ep+2);
     if (k == std::string::npos) k = ep + elen; // hex address until EOF?
-    if (k != ep + elen || elen < 3 || elen > 6) // make sure element is a hex address 0x0..0xffff
-      { errors << "ERROR in line " << linenr(src, ep) << ": Invalid hex address.\n"; return false; }
+    if (k != ep + elen || elen > 6) { errors << "ERROR in line " << linenr(src, ep) << ": Invalid hex address.\n"; return false; } // make sure element is a hex address 0x0..0xffff
     pc = std::stoi(src.substr(ep+2, elen-2), nullptr, 16); // extract hex value // 16-bit hex value
-  }
-  else { errors << "ERROR in line " << linenr(src, ep) << ": Expecting hex format.\n"; return false; }
+  } else { errors << "ERROR in line " << linenr(src, ep) << ": Expecting hex format.\n"; return false; }
   return true; // pc, ep, elen have been updated successfully
 }
 
@@ -132,8 +114,8 @@ static bool is_label(const std::string& def)
 void Assembler(const std::string& src, std::stringstream& hexout, std::stringstream& errors, bool dosym, std::string symtag)
 {
   // PASS 1: #org sets pc, every element increases pc by its bytesize, calculates addresses of label definition
-  std::vector<std::string> labels; // Liste aller Label-Definitionen mit ":"
-  std::vector<uint16_t> labelpc; // Adresse aller Label-Definitionen
+  std::vector<std::string> labels; // deterministische Liste aller Label-Definitionen mit ":"
+  std::vector<uint16_t> labelpc; // deterministische Adresse aller Label-Definitionen
   uint16_t pc = 0; // program counter kepping track of target location
   size_t ep = 0; // elememt pointer (source string index)
   size_t elen; // element length (0 = EOF)
@@ -181,13 +163,11 @@ void Assembler(const std::string& src, std::stringstream& hexout, std::stringstr
   // Ausgabe der Liste aller symbolic constants and their address values [starting with 'tag'].
   if (dosym)
   {
-    for(int k=0; k<labels.size(); k++)            					    // Prüfe: Ist das Element ein label?
+    for(size_t k=0; k<labels.size(); k++)            					    // Prüfe: Ist das Element ein label?
     {
-      int adr = labelpc[k];
+      uint16_t msb = (labelpc[k] & 0xff00)>>8; uint16_t lsb = labelpc[k] & 0x00ff;
       if (symtag == labels[k].substr(0, symtag.length()))
-      {	
-        hexout << "#org 0x" << std::hex << std::setfill('0') << std::setw(2) << int((adr&0xff00)>>8) << std::setw(2) << int(adr&0x00ff) << " " << labels[k] << ":\n";
-      }
+        hexout << "#org 0x" << std::hex << std::setfill('0') << std::setw(2) << msb << std::setw(2) << lsb << " " << labels[k] << ":\n";
     }
   }
   else
@@ -212,7 +192,7 @@ void Assembler(const std::string& src, std::stringstream& hexout, std::stringstr
       {
         for (size_t i=ep+1; i<ep+1+elen-2; i++) { pc++; if (isemit) HEX.Emit(src[i]); }
       }
-      else if (opCode(src, ep, elen) != -1) { pc++; if (isemit) HEX.Emit(opCode(src, ep, elen)); } // mnemonic
+      else if (int oc = opCode(src, ep, elen); oc != -1) { pc++; if (isemit) HEX.Emit(oc); }
       else // SIMPLE EXPRESSION PARSING (first element determins size)
       {
         char lsbmsb = 0; // undefined expression size (later '<', '>' or 'w')
@@ -258,14 +238,13 @@ void Assembler(const std::string& src, std::stringstream& hexout, std::stringstr
             expr += sign * term; // add/subtract this term to the expression
           }
           else { errors << "ERROR in line " << linenr(src, ep) << ": Invalid expression.\n"; return; }
-        }
-        
+        }  
         // WE HAVE THE EXPRESSION VALUE - NOW EMIT IT
         if (lsbmsb == 'w') { pc += 2; if (isemit) { HEX.Emit(expr & 0x00ff); HEX.Emit((expr & 0xff00)>>8); } } // emit LSB, MSB
         else if (lsbmsb == '>') { pc++; if (isemit) HEX.Emit((expr & 0xff00)>>8); } // emit MSB only
         else { pc++; if (isemit) HEX.Emit(expr & 0x00ff); } // emit LSB only
       }
-      ep += elen; // hop over processed element // getchar();
+      ep += elen; // hop over processed element
     }
   }
 }
