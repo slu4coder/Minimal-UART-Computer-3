@@ -693,7 +693,7 @@ public:
 	}
 	void Show()
 	{
-		char buf[100]; mText.Goto(0, 0);
+		char buf[200]; mText.Goto(0, 0);
 		std::string ctrl[] = { " RO "," RI "," TR "," TO "," TI ","MIH ","MIL "," ME ",
                            " CE ","COH ","COL ","CIH ","CIL "," IC "," FI "," II ",
                            "    "," AO "," AI "," BO "," BI "," EC "," ES "," EO " };
@@ -1190,3 +1190,4 @@ int main(int argc, char *argv[]) // OpenGL setup and launch of Application class
   License for more details. You should have received a copy of the GNU General Public License along
   with this program. If not, see https://www.gnu.org/licenses/.
 */
+
