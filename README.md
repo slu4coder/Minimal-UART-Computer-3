@@ -52,6 +52,3 @@ appropriate documentations for detailed licensing information.
 See https://github.com/slu4coder/Minimal-64x4-Home-Computer for a more feature-rich alternative.
 
 Have fun!
-
-Do you like this project and want to give something back? Thank you so much for your support!
-https://www.paypal.me/carstenherting
