@@ -530,9 +530,10 @@ protected:
 class Computer
 {
 public:
-	Computer(TextScreen& usetextscr, Terminal& useterm) : mText(usetextscr), mTerm(useterm)
+	Computer(TextScreen& usetextscr, Terminal& useterm, float targetframetime)
+  : mText(usetextscr), mTerm(useterm), mTargetFrameTime(targetframetime)
 	{
-		for (int j=0; j<8; j++) for (int i=0; i<sizeof(mFLASH[j]); i++) mFLASH[j][i] = 0xff;
+    for (int j=0; j<8; j++) for (int i=0; i<sizeof(mFLASH[j]); i++) mFLASH[j][i] = 0xff;
 		for (int i=0; i<sizeof(mRAM); i++) mRAM[i] = RandomByte(); // oder nutze 0x00;
 
 		std::ifstream file;
@@ -665,8 +666,8 @@ public:
 			case RUN:
 			{
 				mSimTime += deltat;
-				if (deltat >= 0.02f) mOverload = 0.9f*mOverload + 0.1f; else mOverload = 0.9f*mOverload + 0.0f;
-				if (deltat > 0.1f) mSimTime = 0.05f;					// Notbremse!
+				if (deltat > 1.5f * mTargetFrameTime) mOverload = 0.95f*mOverload + 0.05f; else mOverload = 0.95f*mOverload + 0.0f;
+				if (deltat > 5.0f * mTargetFrameTime) mSimTime = 0.1f; // Notbremse!
 				else
 				{
 					float cycletime = 1.0f / mFrequency;
@@ -744,9 +745,10 @@ public:
 		}
 	}
   void AddToShowIndex(int delta) { mShowIndex += delta; }
-	COMPSTATE mState{ HALT };
-	float mFrequency{ 0.0f };
-	float mOverload{ 0.0f };
+	COMPSTATE mState {HALT};
+	float mFrequency {0.0f};
+	float mOverload {0.0f};
+  float mTargetFrameTime {1.0f};
 	double mMips{ 0.0f };
 	uint16_t mBreak{ 0 }; // break point
 	uint8_t mBus{ 0 }; // value stored on the bus
@@ -793,7 +795,8 @@ class Application // sandbox environment hosting memory, display and the Min int
 public:
   Application(const Application& other) = delete;
   Application& operator=(const Application& other) = delete;
-  Application(GLFWwindow* win, int argc, char *argv[]) : mWin(win)
+  Application(GLFWwindow* win, float targetframetime, int argc, char *argv[])
+  : mWin(win), mCPU(mText, mTerm, targetframetime)
   {
     glfwSetKeyCallback(win, Application::CallBack_KeyStateChanged); // static member functions as callbacks
     glfwSetCharCallback(win, Application::CallBack_KeyCodePointPressed);
@@ -984,17 +987,17 @@ public:
 			{
         mTerm.SetTint(0.35f, 1.0f, 0.65f, 0.25f);
         const int tx = 22, ty = 10;
-				mText.Print(tx, ty+0,5,  "Minimal UART CPU 3.3 Emulator by C. Herting (slu4) 2026");
+				mText.Print(tx, ty+0,5,  "Minimal UART CPU 3.3 Emulator by Slu4 2026");
 				if (!gFlashLoaded) mText.Print(tx, ty+1,2, "ERROR: Can't find SSD image file 'flash.bin'.");
-				mText.Print(tx, ty+3,0,  "[ F1] - Toggles this menu.");
-        mText.Print(tx, ty+4,0,  "[ F2] - Toggles CPU monitor.");
-        mText.Print(tx, ty+5,1,  "[ F8] - Saves CTRL FLASH dump.");
-				mText.Print(tx, ty+6,7,  "[F10] - Feeds clipboard data as UART input.");
-				mText.Print(tx, ty+7,7,  "[F11] - RESET");
-				mText.Print(tx, ty+8,7,  "[F12] - Exits and saves SSD image to 'flash.bin'.");
+				mText.Print(tx, ty+3,0,  "[  F1 ] - Toggles this menu");
+        mText.Print(tx, ty+4,0,  "[  F2 ] - Toggles CPU monitor");
+        mText.Print(tx, ty+5,1,  "[  F8 ] - Saves CTRL FLASH dump");
+				mText.Print(tx, ty+6,7,  "[ F10 ] - Feeds clipboard data as UART input");
+				mText.Print(tx, ty+7,7,  "[ F11 ] - RESET");
+				mText.Print(tx, ty+8,7,  "[ F12 ] - Exits and saves SSD image to 'flash.bin'");
         if (gMenuInput.size() > 0) mText.Print(0, 29, 0, gMenuInput);
         mText.Print(tx, ty+12,0, "CPU clock rate = " + std::to_string(int(mCPU.mFrequency)) + "Hz (use [+] and [-])");
-				mText.Print(tx, ty+13,0, "Frame rate = " + std::to_string(int(mFpsInfo)) + "fps.");
+				mText.Print(tx, ty+13,0, "Frame rate/target  = " + std::to_string(int(mFpsInfo + 0.5f)) + "/" + std::to_string(int(1.0f/mCPU.mTargetFrameTime + 0.5f)) + " fps");
         break;
 			}
 			case MENU_STATUS:
@@ -1003,15 +1006,15 @@ public:
 				mText.Print(0, 23, 1, "[F3/4]       Dec/inc RAM monitor by 0x0100");
 				mText.Print(0, 24, 1, "[SHIFT F3/4] Dec/inc RAM monitor by 0x1000");
 				mText.Print(0, 26, 1, std::to_string(int(mCPU.mFrequency)) + "Hz");
-				mText.Print(15, 26, 1, std::to_string(int(mFpsInfo)) + "fps");
-        mText.Print(30, 26, 1, std::to_string(mCPU.mMips) + "CPI");
+				mText.Print(15, 26, 1, std::to_string(int(mFpsInfo + 0.5f)) + "/" + std::to_string(int(1.0f/mCPU.mTargetFrameTime + 0.5f)) + " fps");
+        mText.Print(30, 26, 1, std::to_string(mCPU.mMips) + " cpi");
 				if (gMenuInput.size() > 0) mText.Print(0, 29, 0, gMenuInput);
         break;
 			default: mTerm.SetTint(0.35f, 1.0f, 0.65f, 1.0f); break;
 		}
 
     mTerm.Render();
-    if (mCPU.mOverload > 0.5f) mText.Print(45, 26, 2, "Clockrate too high!");
+    if (mCPU.mOverload > 0.5f) mText.Print(30, 28, 2, "!! REQUESTED CPU CLOCK RATE TOO HIGH !!");
 		mText.Render();
   }
   bool isRunning() { return mIsRunning; }
@@ -1109,8 +1112,8 @@ private:
   static bool mKeyStates[1024]; // state of all keys
   Terminal mTerm {(const uint32_t*)&_binary_charset_bin_start, 50, 30};
   TextScreen mText {(const uint32_t*)&_binary_charset_bin_start, 100, 30};
-	float mFpsInfo {60.0f};																// gemessene Anzahl 'frames per second'
-	Computer mCPU {mText, mTerm};
+	float mFpsInfo {60.0f};	// gemessene Anzahl 'frames per second'
+	Computer mCPU; // see initializer : list
 	uint16_t mShowIndex {0};
 	enum MENUSTATE {MENU_SPLASH, MENU_OFF, MENU_STATUS} mMenuState {MENU_SPLASH};
 };
@@ -1125,17 +1128,20 @@ int main(int argc, char *argv[]) // OpenGL setup and launch of Application class
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_SAMPLES, 0);
 
-  const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  float targetframetime = 1.0f/float(mode->refreshRate);
+
   if (mode == nullptr) { std::cerr << "glfwGetVideoMode() failed\n"; return 0; }
   glfwWindowHint(GLFW_RED_BITS, mode->redBits);
   glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
   glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
   glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  GLFWwindow* win = glfwCreateWindow(mode->width, mode->height, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // FULLSCREEN: glfwGetPrimaryMonitor(), WINDOWED: nullptr
+  GLFWwindow* win = glfwCreateWindow(mode->width, mode->height, "OpenGL", monitor, nullptr); // FULLSCREEN: monitor, WINDOWED: nullptr
   if (win == nullptr) { std::cerr << "glfwCreateWindow() failed\n"; glfwTerminate(); return 0; } // glfwTerminate() is new
   glfwMakeContextCurrent(win);
-  glfwSwapInterval(1);
+  glfwSwapInterval(1); // acts on current context
   glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) // Init GLAD OpenGL-Extension-Loader BEFORE any OpenGL calls are made
@@ -1154,7 +1160,7 @@ int main(int argc, char *argv[]) // OpenGL setup and launch of Application class
   try // exceptions are thrown by the application to report errors during display setup, shader loading etc.
   {
     float lasttime = float(glfwGetTime());
-    Application app(win, argc, argv); // create main application
+    Application app(win, targetframetime, argc, argv); // create main application
     while (app.isRunning()) // MAIN LOOP OF APPLICATION
     {
       float akttime = float(glfwGetTime());
@@ -1167,7 +1173,7 @@ int main(int argc, char *argv[]) // OpenGL setup and launch of Application class
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // colors are cleared, stencil and z buffer could also be cleared
       app.Render();
       glfwSwapBuffers(win);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      if (deltat < 0.5f * targetframetime) std::this_thread::sleep_for(std::chrono::milliseconds(1)); // catch disabled VSYNC
     }
   }
   catch (const std::exception& e) { std::cerr << e.what() << std::endl; }
@@ -1190,4 +1196,3 @@ int main(int argc, char *argv[]) // OpenGL setup and launch of Application class
   License for more details. You should have received a copy of the GNU General Public License along
   with this program. If not, see https://www.gnu.org/licenses/.
 */
-
