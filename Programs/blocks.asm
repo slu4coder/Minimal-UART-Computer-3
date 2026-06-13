@@ -84,7 +84,7 @@ state_run:    INP CPI 0xff BEQ run_nokey     ; non-blocking key input
                   JPA game_loop
 
   run_nokey:    DEW counter BCS game_loop
-                LDI 0x01 STB counter+1 LDI 0x80 STB counter+0   ; restart counter
+                LDI 0x04 STB counter+1 LDI 0x00 STB counter+0   ; restart counter
                 INW gameframes                            ; count a frame
                 DEB waiting                               ; tetromino falling? Watch out: waiting may already be < 0 due to 's' key
                 CPI 0x80 BCC game_loop
@@ -377,7 +377,7 @@ minos:        0,  0,  1,  0,  0, -1, 1, -1,   1  ; square
 
 wintable:     0, 20, 50, 100, 250     ; points depending on cleared rows (x2)
 
-highscore:    0x1bca                  ; holding the current highscore 10.5.2021
+highscore:    0x03e7                  ; holding the current highscore
 
 #mute
 
@@ -436,14 +436,5 @@ rowfull:      0xff          ; boolean line completed
 #org 0xfec9 _ReadPtr:
 #org 0xfecb _ReadNum:
 #org 0xfece _ReadBuffer:
-
-; LICENSING INFORMATION
-; This is free software: you can redistribute it and/or modify it under the terms of the
-; GNU General Public License as published by the Free Software Foundation, either
-; version 3 of the License, or (at your option) any later version.
-; This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-; the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
-; License for more details. You should have received a copy of the GNU General Public License along
-; with this program. If not, see https://www.gnu.org/licenses/.
 
 
