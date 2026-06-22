@@ -43,6 +43,8 @@ OVERVIEW:
 
 I hope you find this information useful, educational or otherwise interesting. I'd love to hear about your build, so meet me on YouTube:
 
+https://www.youtube.com/watch?v=wpls_rTcvJ8
+
 https://www.youtube.com/channel/UCXYQcMpUBT3aaQKfmAVJNow
 
 This is a free and non-commercial project. I am in no way associated with any activies selling this as a product.
