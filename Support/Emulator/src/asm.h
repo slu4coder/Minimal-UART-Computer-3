@@ -129,9 +129,12 @@ void Assembler(const std::string& src, std::stringstream& hexout, std::stringstr
         if (def == labels[i]) { errors << "ERROR in line " << linenr(src, ep) << ": \'" << def << "\' already exists.\n"; return; }
       labels.emplace_back(src.substr(ep, elen-1)); labelpc.emplace_back(pc);
     }
-    else if (elen == 4 && src.substr(ep, 4) == "#org") // ignore other preprocessor commands here
+    else if (src[ep] == '#') // handle pre-processor command
     {
-      if (parse_org(src, ep, elen, pc, errors) == false) return;
+      if (elen == 4 && src.substr(ep, 4) == "#org") // ignore #emit and #mute here
+      {
+        if (parse_org(src, ep, elen, pc, errors) == false) return;
+      }
     }
     else if (src[ep] == '\'')
     {
