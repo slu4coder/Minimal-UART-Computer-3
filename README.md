@@ -51,6 +51,6 @@ This is a free and non-commercial project. I am in no way associated with any ac
 Any such activity represents a license violation. Individual licenses apply for hardware and software parts. Please refer to the
 appropriate documentations for detailed licensing information.
 
-See https://github.com/slu4coder/Minimal-64x4-Home-Computer for a more feature-rich alternative.
+See https://github.com/slu4coder/Minimal-64x4-Home-Computer for a more feature-rich alternative with bitmap graphics, VGA and PS/2.
 
 Have fun!
