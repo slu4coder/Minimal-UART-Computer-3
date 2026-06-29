@@ -1,5 +1,5 @@
 // *******************************************************************************
-// ***** Minimal UART Computer 3 Emulator by Carsten Herting -- Jan 5th 2026 *****
+// ***** Minimal UART Computer 3 Emulator by Carsten Herting - Jun 29th 2026 *****
 // *******************************************************************************
 // See licensing information at the end of this file.
 
@@ -19,6 +19,7 @@
 #include <memory> // smart pointers
 #include <vector> // dynamic arrays
 #include <deque>
+#include <queue>
 #include <thread>
 #include <algorithm>
 #include <utility> // for exchange
@@ -802,6 +803,8 @@ public:
     glfwSetCharCallback(win, Application::CallBack_KeyCodePointPressed);
     mIsRunning = true;
     mTerm.SetTint(0.35f, 1.0f, 0.65f, 1.0f); // greenish terminal display
+
+    for (int i=1; i<argc; i++) args.push(std::string(argv[i])); // save the arguments of the command line
   }
   ~Application() = default;
   void ProcessInput()
@@ -817,7 +820,9 @@ public:
       }
 			case MENU_SPLASH:
 			{
-				if (TakeKeyState(GLFW_KEY_F1)) { mMenuState = MENU_OFF; gKeyTarget = TARGET_SERIAL; }
+				while (mCPU.mIR == 0x3c && args.size() > 0) { gMenuInput += args.front() + "\n"; args.pop(); }
+        
+        if (TakeKeyState(GLFW_KEY_F1)) { mMenuState = MENU_OFF; gKeyTarget = TARGET_SERIAL; }
         if (TakeKeyState(GLFW_KEY_F2)) mMenuState = MENU_STATUS;
 				if (TakeKeyState(GLFW_KEY_F12)) mIsRunning = false;
         if (TakeKeyState(GLFW_KEY_F8))				// ROM memory dump of 0x0000-0x0fff in Intel HEX format
@@ -862,7 +867,21 @@ public:
 				{
 					switch(gMenuInput[0])                    		          // werte die verschiedenen Kommandos aus
 					{
-						case 'l':		// load and assemble a source file
+						case 'p':		// change program counter and run!
+            {
+							if (gMenuInput[gMenuInput.size()-1] == 8 && gMenuInput.size() > 0) gMenuInput.erase(gMenuInput.size()-2, 2);
+							if (gMenuInput.size() >= 5)                              // gibt es auch ein End-Kontrollzeichen? END OF TEXT
+							{
+								std::stringstream sadr; sadr << std::hex << gMenuInput.substr(1, 4);
+								gMenuInput = gMenuInput.substr(5);
+								sadr >> mCPU.mPC; mCPU.mSC = 0; mCPU.mIR = 0; mCPU.mFR = 0;
+		            mMenuState = MENU_OFF;
+								mCPU.mState = RUN;
+                gKeyTarget = TARGET_SERIAL;
+							} else needmoremenu = true;
+							break;
+            }
+            case 'l':		// load and assemble a source file
 						{
 							if (gMenuInput[gMenuInput.size()-1] == 8 && gMenuInput.size() > 0) gMenuInput.erase(gMenuInput.size()-2, 2);
 							size_t endofmsg = gMenuInput.find('\n');     // Suche nach dem End-Kontrollzeichen
@@ -948,7 +967,7 @@ public:
 							{
 								std::stringstream sadr; sadr << std::hex << gMenuInput.substr(1, 4);
 								gMenuInput = gMenuInput.substr(5);
-								sadr >> mCPU.mPC;
+								sadr >> mCPU.mPC; mCPU.mSC = 0; mCPU.mIR = 0; mCPU.mFR = 0;
 								mCPU.mState = HALT;
 							} else needmoremenu = true;
 							break;
@@ -1108,6 +1127,7 @@ private:
   }
 
   GLFWwindow* mWin;
+  std::queue<std::string> args;
   bool mIsRunning {false};
   static bool mKeyStates[1024]; // state of all keys
   Terminal mTerm {(const uint32_t*)&_binary_charset_bin_start, 50, 30};
