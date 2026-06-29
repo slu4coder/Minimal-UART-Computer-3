@@ -1,4 +1,4 @@
-# Minimal UART Computer 3
+# Minimal UART Computer 3 - Blinkenlights!
 
 Here comes a big update of my DIY 'Minimal UART Computer', a machine built around a serial interface just from a handful of logic ICs, RAM and FLASH memory. For it's size, simplicity and self-imposed limitations, it's got double the processing power of a Commodore C64 or Apple II. It's mission is to be a fun learning platform for understanding computers on a fundamental level.
 
