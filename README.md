@@ -4,6 +4,8 @@ Here comes a big update of my DIY 'Minimal UART Computer', a machine built aroun
 
 <img width="779" height="625" alt="Minimal_UART_3" src="https://github.com/user-attachments/assets/1e2fa621-603e-458f-a319-ecda84b14bd7" />
 
+This is a free and non-commercial project. I am in no way associated with any activies selling the 'Minimal UART Computer' as a product. Any such activity represents a license violation. Individual licenses apply for hardware and software parts. Please refer to the applicable documentations for detailed licensing information. 
+
 ● Manual: https://docs.google.com/document/d/1nIM-WRrVe7SzYY-DS1jcVHC4TCuIhlQ6LCHnZnEml7k/edit?usp=sharing
 
 ● The Minimal UART Computer has a dedicated hardware serial 'Minimal Terminal': https://github.com/slu4coder/Minimal-Terminal
