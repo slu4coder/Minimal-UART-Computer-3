@@ -55,4 +55,8 @@ appropriate documentations for detailed licensing information.
 
 See https://github.com/slu4coder/Minimal-64x4-Home-Computer for a more feature-rich alternative with bitmap graphics, VGA and PS/2.
 
+If you like this project and want to give something back, you can do so via PayPal. Thanks!
+
+https://paypal.me/CarstenHerting
+
 Have fun!
