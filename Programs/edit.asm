@@ -138,44 +138,46 @@ Update:       LDA xcur SUI <width-5 BCC ud_usexorg        ; check whether cursor
 ; ------------------------------------------------------------
 
 StateChar:  JPS Update                                 ; check if redraw is needed but always draw cursor
-            WIN CPI 27 BEQ sc_IsESC                    ; handle multi-char ESC sequences efficiently
-              CPI 127 BEQ pc_Delete BCS mainloop       ; discard chars >127
-                CPI 32 BCS pc_default                  ; printable chars (including LF) are handled by "pc_default"
-                CPI 10 BEQ pc_default                  ; ENTER (LF)
-                CPI 9 BNE sc_nonprint                  ; TAB
-                  LDI 32 JPA pc_default                ; convert to SPACE
-  sc_nonprint:  CPI 8 BEQ pc_BackSp                    ; CHECK FOR NON-PRINTABLES <32
-                CPI 0x01 BEQ pc_CtrlA
-                CPI 0x18 BEQ pc_CtrlX
-                CPI 0x03 BEQ pc_CtrlC
-                CPI 0x16 BEQ pc_CtrlV
-                CPI 0x0c BEQ pc_CtrlL
-                CPI 0x13 BEQ pc_CtrlS
-                CPI 0x0e BEQ pc_CtrlN
-                CPI 0x12 BEQ pc_CtrlR
-                CPI 0x14 BEQ pc_CtrlT
-                CPI 0x11 BEQ pc_CtrlQ
-                  JPA mainloop                         ; discard other characters, e.g. CR
+            WIN CPI 128 BCS mainloop                   ; discard chars >= 128
+              CPI 27 BEQ sc_IsESC                      ; handle multi-char ESC sequences efficiently
+              CPI 32 BCS pc_default                    ; printable chars (including LF) are handled by "pc_default"
+              CPI 10 BEQ pc_default                    ; ENTER (LF)
+              CPI 9 BEQ pc_Tab                         ; TAB
+              CPI 8 BEQ pc_BackSp                      ; CHECK FOR NON-PRINTABLES <32
+              CPI 0x01 BEQ pc_CtrlA
+              CPI 0x18 BEQ pc_CtrlX
+              CPI 0x03 BEQ pc_CtrlC
+              CPI 0x16 BEQ pc_CtrlV
+              CPI 0x0c BEQ pc_CtrlL
+              CPI 0x13 BEQ pc_CtrlS
+              CPI 0x0e BEQ pc_CtrlN
+              CPI 0x12 BEQ pc_CtrlR
+              CPI 0x14 BEQ pc_CtrlT
+              CPI 0x11 BEQ pc_CtrlQ
+                JPA mainloop                           ; discard other noprint chars, e.g. CR
 
-  sc_IsESC: WIN CPI '[' BNE mainloop WIN               ; ESC handler: assert "[" or ignore and go back to state = 0
+  sc_IsESC: WIN CPI '[' BNE mainloop                   ; ESC handler: assert "[" or ignore and go back to state = 0
+              WIN
               CPI 'A' BEQ pc_Up
               CPI 'B' BEQ pc_Down
-              CPI 'D' BEQ pc_Left
               CPI 'C' BEQ pc_Right
-              CPI 'H' BEQ pc_Pos1                      ; is used on Linux (see below for Windows)
-              CPI 'F' BEQ pc_End
-              CPI '5' BEQ pc_PgUp
-              CPI '6' BEQ pc_PgDown
-                STB 0xff00 WIN                         ; possible ~ sequence: remember current char
-                CPI '~' BNE mainloop                   ; test for ~
+              CPI 'D' BEQ pc_Left
+              CPI 'H' BEQ pc_Pos1                      ; for TERM=xterm & Windows
+              CPI 'F' BEQ pc_End                       ; for TERM=xterm & Windows
+                STB 0xff00                             ; must be a ~ sequence: remember current char
+                WIN CPI '~' BNE mainloop               ; test for ~
                   LDA 0xff00
-                  CPI '1' BEQ pc_Pos1                  ; 1~ is used on Windows (see above for Linux)
-                  CPI '4' BEQ pc_End                   ; 4~
-                  CPI '5' BEQ pc_PgUp                  ; 5~
-                  CPI '6' BEQ pc_PgDown                ; 6~
+                  CPI '1' BEQ pc_Pos1                  ; for TERM=linux
+                  CPI '4' BEQ pc_End                   ; for TERM=linux
+                  CPI '5' BEQ pc_PgUp
+                  CPI '6' BEQ pc_PgDown
+                  CPI '3' BEQ pc_Delete
+                  ; CPI '2' BEQ pc_Insert              ; not yet implemented
                     JPA mainloop
 
 ; ------------------------------------------------------------
+
+  pc_Tab:       LDI 32 JPA pc_default                  ; convert TAB to single (???) SPACE
 
   pc_CtrlA:     LDA tptr+0 STB marktptr+0          ; save tptr
                 LDA tptr+1 STB marktptr+1
